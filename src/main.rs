@@ -1,3 +1,4 @@
+use actix_cors::Cors;
 use actix_web::{get, web, App, HttpServer, Responder, HttpResponse};
 use std::sync::Mutex;
 
@@ -28,13 +29,16 @@ async fn main() -> std::io::Result<()> {
     });
 
     HttpServer::new(move || {
+        let cors = Cors::default();
+
         App::new()
+            .wrap(cors)
             .app_data(counter.clone())
             .service(test)
             .route("/", web::get().to(index))
     })
-    // .bind("0.0.0.0:8080")?
-    .bind("127.0.0.1:8080")?
+    .bind("0.0.0.0:8080")?
+    // .bind("127.0.0.1:8080")?
     .run()
     .await
 }
