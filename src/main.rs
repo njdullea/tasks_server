@@ -1,9 +1,16 @@
-use actix_web::{web, App, HttpServer};
+use actix_web::{get, web, App, HttpServer, Responder, HttpResponse};
 use std::sync::Mutex;
 
 struct AppState {
     user: Mutex<String>,
     counter: Mutex<i32>,
+}
+
+#[get("/test")]
+async fn test(req_body: String, data: web::Data<AppState>) -> impl Responder {
+    println!("Hit the test: {}", req_body);
+    let test = data.user.lock().unwrap().to_string();
+    HttpResponse::Ok().body(test)
 }
 
 async fn index(data: web::Data<AppState>) -> String {
@@ -23,10 +30,11 @@ async fn main() -> std::io::Result<()> {
     HttpServer::new(move || {
         App::new()
             .app_data(counter.clone())
+            .service(test)
             .route("/", web::get().to(index))
     })
-    .bind("0.0.0.0:8080")?
-    // .bind("127.0.0.1:8080")?
+    // .bind("0.0.0.0:8080")?
+    .bind("127.0.0.1:8080")?
     .run()
     .await
 }
